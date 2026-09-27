@@ -1,0 +1,117 @@
+name: PR CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  format_check:
+    name: Code Style
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: enhanced
+          cache-read-only: true
+
+      - name: Check code formatting
+        run: ./gradlew spotlessCheck --no-configuration-cache
+
+  unit_tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: enhanced
+          cache-read-only: true
+
+      - name: Run Debug unit tests
+        run: ./gradlew :app:testDebugUnitTest :intent-executor:testDebugUnitTest --no-configuration-cache
+
+  build_for_pr:
+    name: Build Debug APK
+    needs:
+      - format_check
+      - unit_tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: enhanced
+          cache-read-only: true
+
+      - name: Build Debug APK
+        run: ./gradlew :app:assembleDebug --no-configuration-cache
+
+      - name: Name Debug APK from Gradle version
+        id: debug_apk
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          metadata=app/build/outputs/apk/debug/output-metadata.json
+          version_name=$(jq -er '.elements[0].versionName' "$metadata")
+          output_file=$(jq -er '.elements[0].outputFile' "$metadata")
+          source_apk="app/build/outputs/apk/debug/$output_file"
+          target_apk="app/build/outputs/apk/debug/IntentX-PR-$PR_NUMBER-Debug-$version_name.apk"
+          test -f "$source_apk"
+          mv "$source_apk" "$target_apk"
+          echo "apk=$target_apk" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v7
+        with:
+          path: ${{ steps.debug_apk.outputs.apk }}
+          if-no-files-found: error
+          retention-days: 7
+          archive: false

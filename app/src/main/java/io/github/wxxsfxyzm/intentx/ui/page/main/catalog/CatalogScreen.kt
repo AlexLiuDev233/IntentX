@@ -221,58 +221,76 @@ fun CatalogActionMenu() {
             popupProperties = PopupProperties(focusable = false),
             itemContent = { group, index, shapes, _ ->
                 val order = CatalogSortOrder.entries.getOrNull(index)
-                val checked = if (group == 0) {
-                    state.sortOrder == order
-                } else if (group == 1) {
-                    when (index) {
-                        0 -> state.reverseOrder
-                        1 -> state.showSystem
-                        2 -> !state.showPackageName
-                        else -> state.hideOverlays
+                val checked = when (group) {
+                    0 -> {
+                        state.sortOrder == order
                     }
-                } else {
-                    state.searchActivities
-                }
-                val label = if (group == 0) {
-                    when (order) {
-                        CatalogSortOrder.Label -> R.string.sort_by_label
-                        CatalogSortOrder.PackageName -> R.string.sort_by_package_name
-                        CatalogSortOrder.FirstInstallTime -> R.string.sort_by_install_time
-                        null -> error("Invalid catalog sort option")
-                    }
-                } else if (group == 1) {
-                    when (index) {
-                        0 -> if (state.sortOrder == CatalogSortOrder.FirstInstallTime) {
-                            R.string.sort_oldest_first
-                        } else {
-                            R.string.sort_z_to_a
+
+                    1 -> {
+                        when (index) {
+                            0 -> state.reverseOrder
+                            1 -> state.showSystem
+                            2 -> !state.showPackageName
+                            else -> state.hideOverlays
                         }
-
-                        1 -> R.string.system_apps
-
-                        2 -> R.string.catalog_hide_package_name
-
-                        else -> R.string.catalog_hide_overlays
                     }
-                } else {
-                    R.string.catalog_search_activities
+
+                    else -> {
+                        state.searchActivities
+                    }
+                }
+                val label = when (group) {
+                    0 -> {
+                        when (order) {
+                            CatalogSortOrder.Label -> R.string.sort_by_label
+                            CatalogSortOrder.PackageName -> R.string.sort_by_package_name
+                            CatalogSortOrder.FirstInstallTime -> R.string.sort_by_install_time
+                            null -> error("Invalid catalog sort option")
+                        }
+                    }
+
+                    1 -> {
+                        when (index) {
+                            0 -> if (state.sortOrder == CatalogSortOrder.FirstInstallTime) {
+                                R.string.sort_oldest_first
+                            } else {
+                                R.string.sort_z_to_a
+                            }
+
+                            1 -> R.string.system_apps
+
+                            2 -> R.string.catalog_hide_package_name
+
+                            else -> R.string.catalog_hide_overlays
+                        }
+                    }
+
+                    else -> {
+                        R.string.catalog_search_activities
+                    }
                 }
                 CheckableDropdownMenuItem(
                     shapes = shapes,
                     checked = checked,
                     onCheckedChange = { enabled ->
-                        if (group == 0) {
-                            viewModel.dispatch(CatalogViewAction.SetSortOrder(checkNotNull(order)))
-                            expanded = false
-                        } else if (group == 1) {
-                            when (index) {
-                                0 -> viewModel.dispatch(CatalogViewAction.SetReverseOrder(enabled))
-                                1 -> viewModel.dispatch(CatalogViewAction.SetShowSystem(enabled))
-                                2 -> viewModel.dispatch(CatalogViewAction.SetShowPackageName(!enabled))
-                                else -> viewModel.dispatch(CatalogViewAction.SetHideOverlays(enabled))
+                        when (group) {
+                            0 -> {
+                                viewModel.dispatch(CatalogViewAction.SetSortOrder(checkNotNull(order)))
+                                expanded = false
                             }
-                        } else {
-                            viewModel.dispatch(CatalogViewAction.SetSearchActivities(enabled))
+
+                            1 -> {
+                                when (index) {
+                                    0 -> viewModel.dispatch(CatalogViewAction.SetReverseOrder(enabled))
+                                    1 -> viewModel.dispatch(CatalogViewAction.SetShowSystem(enabled))
+                                    2 -> viewModel.dispatch(CatalogViewAction.SetShowPackageName(!enabled))
+                                    else -> viewModel.dispatch(CatalogViewAction.SetHideOverlays(enabled))
+                                }
+                            }
+
+                            else -> {
+                                viewModel.dispatch(CatalogViewAction.SetSearchActivities(enabled))
+                            }
                         }
                     },
                     text = { Text(stringResource(label)) },

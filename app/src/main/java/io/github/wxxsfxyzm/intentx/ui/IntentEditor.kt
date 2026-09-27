@@ -95,6 +95,7 @@ import io.github.wxxsfxyzm.intentx.ui.page.main.widget.setting.BaseWidget
 import io.github.wxxsfxyzm.intentx.ui.page.main.widget.setting.DropDownMenuWidget
 import io.github.wxxsfxyzm.intentx.ui.page.main.widget.setting.SegmentedColumn
 import io.github.wxxsfxyzm.intentx.ui.page.main.widget.setting.SwitchWidget
+import io.github.wxxsfxyzm.intentx.ui.util.clearFocusOnImeDismiss
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -347,6 +348,7 @@ internal fun IntentEditor(
                         isError = mask == null,
                         singleLine = true,
                         modifier = Modifier
+                            .clearFocusOnImeDismiss()
                             .fillMaxWidth()
                             .padding(12.dp),
                     )
@@ -380,6 +382,7 @@ internal fun IntentEditor(
                         { query = it },
                         label = { Text(stringResource(R.string.editor_filter_flags)) },
                         modifier = Modifier
+                            .clearFocusOnImeDismiss()
                             .fillMaxWidth()
                             .padding(12.dp),
                     )
@@ -987,6 +990,7 @@ private fun DraftSuggestionField(
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(menuExpanded) },
                 singleLine = true,
                 modifier = Modifier
+                    .clearFocusOnImeDismiss { expanded = false }
                     .fillMaxWidth()
                     .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
             )
@@ -1068,6 +1072,7 @@ private fun DraftSuggestionField(
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(menuExpanded) },
                 singleLine = true,
                 modifier = Modifier
+                    .clearFocusOnImeDismiss { expanded = false }
                     .fillMaxWidth()
                     .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
             )
@@ -1140,6 +1145,7 @@ private fun DraftActionField(value: String, onValueChange: (String) -> Unit) {
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
                 singleLine = true,
                 modifier = Modifier
+                    .clearFocusOnImeDismiss { expanded = false }
                     .fillMaxWidth()
                     .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
             )
@@ -1234,6 +1240,7 @@ private fun DraftField(
             supportingText = hint?.let { { Text(stringResource(it)) } },
             singleLine = !multiline,
             modifier = Modifier
+                .clearFocusOnImeDismiss()
                 .fillMaxWidth()
                 .padding(12.dp),
         )

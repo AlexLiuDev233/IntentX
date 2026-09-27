@@ -63,18 +63,20 @@ import io.github.wxxsfxyzm.intentx.ui.page.main.widget.setting.ExpressiveBackBut
 import io.github.wxxsfxyzm.intentx.ui.theme.getMaterial3AppBarColor
 import io.github.wxxsfxyzm.intentx.ui.theme.installerMaterial3BlurEffect
 import io.github.wxxsfxyzm.intentx.ui.theme.rememberMaterial3BlurBackdrop
+import io.github.wxxsfxyzm.intentx.ui.util.ImeDismissalFocusScope
+import io.github.wxxsfxyzm.intentx.ui.util.clearFocusOnImeDismiss
 import org.koin.androidx.compose.koinViewModel
 import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.nav.gesture.WindowNavigationEventBridge
 
 @Composable
-fun IntentXMainTab(page: Int, title: String, useBlur: Boolean, outerPadding: PaddingValues) {
+fun IntentXMainTab(page: Int, title: String, useBlur: Boolean, outerPadding: PaddingValues, active: Boolean) {
     IntentXPageScaffold(
         title = title,
         useBlur = useBlur,
         outerPadding = outerPadding,
-        topBarContent = if (page == 0) ({ CatalogSearchField() }) else null,
+        topBarContent = if (page == 0) ({ CatalogSearchField(active = active) }) else null,
         canCreate = page < 2,
         actions = if (page == 0) ({ CatalogActionMenu() }) else null,
     ) { modifier, contentPadding, _ ->
@@ -89,6 +91,7 @@ fun IntentXMainTab(page: Int, title: String, useBlur: Boolean, outerPadding: Pad
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IntentXDestination(route: Route, useBlur: Boolean) {
+    val navigator = LocalNavigator.current
     val editorViewModel = if (route is Route.Editor) koinViewModel<EditorViewModel>() else null
     var showShortcutSheet by rememberSaveable(route) { mutableStateOf(false) }
     var showSaveDialog by rememberSaveable(route) { mutableStateOf(false) }
@@ -130,12 +133,14 @@ fun IntentXDestination(route: Route, useBlur: Boolean) {
     }
     val pageContent: @Composable (Modifier, PaddingValues) -> Unit = { modifier, contentPadding ->
         if (route is Route.Editor) {
-            EditorPage(
-                modifier = modifier,
-                contentPadding = contentPadding,
-                route = route,
-                viewModel = checkNotNull(editorViewModel),
-            )
+            ImeDismissalFocusScope(enabled = navigator.current() == route && !showShortcutSheet && !showSaveDialog) {
+                EditorPage(
+                    modifier = modifier,
+                    contentPadding = contentPadding,
+                    route = route,
+                    viewModel = checkNotNull(editorViewModel),
+                )
+            }
         } else if (route is Route.Activities) {
             CatalogScreen(modifier, route.packageName, contentPadding, showSearch = false)
         }
@@ -174,7 +179,9 @@ fun IntentXDestination(route: Route, useBlur: Boolean) {
         val state by editorViewModel.uiState.collectAsStateWithLifecycle()
         ModalBottomSheet(onDismissRequest = { showShortcutSheet = false }) {
             WindowNavigationEventBridge()
-            ShortcutSettingsSheet(state, editorViewModel::dispatch)
+            ImeDismissalFocusScope(enabled = navigator.current() == route) {
+                ShortcutSettingsSheet(state, editorViewModel::dispatch)
+            }
         }
     }
     if (showSaveDialog && editorViewModel != null) {
@@ -185,21 +192,25 @@ fun IntentXDestination(route: Route, useBlur: Boolean) {
             onDismissRequest = { showSaveDialog = false },
             title = { Text(stringResource(R.string.profile_save_title)) },
             text = {
-                Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(
-                        value = name,
-                        onValueChange = { name = it },
-                        label = { Text(stringResource(R.string.profile_name)) },
-                        singleLine = true,
-                        isError = name.isBlank(),
-                    )
-                    OutlinedTextField(
-                        value = description,
-                        onValueChange = { description = it },
-                        label = { Text(stringResource(R.string.profile_description_optional)) },
-                        minLines = 2,
-                        maxLines = 4,
-                    )
+                ImeDismissalFocusScope(enabled = navigator.current() == route) {
+                    Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) {
+                        OutlinedTextField(
+                            value = name,
+                            onValueChange = { name = it },
+                            label = { Text(stringResource(R.string.profile_name)) },
+                            singleLine = true,
+                            isError = name.isBlank(),
+                            modifier = Modifier.clearFocusOnImeDismiss(),
+                        )
+                        OutlinedTextField(
+                            value = description,
+                            onValueChange = { description = it },
+                            label = { Text(stringResource(R.string.profile_description_optional)) },
+                            minLines = 2,
+                            maxLines = 4,
+                            modifier = Modifier.clearFocusOnImeDismiss(),
+                        )
+                    }
                 }
             },
             confirmButton = {

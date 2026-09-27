@@ -10,9 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -36,14 +34,11 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -63,8 +58,9 @@ import io.github.wxxsfxyzm.intentx.ui.navigation.LocalNavigator
 import io.github.wxxsfxyzm.intentx.ui.navigation.Route
 import io.github.wxxsfxyzm.intentx.ui.page.main.widget.menu.GroupedDropdownMenuPopup
 import io.github.wxxsfxyzm.intentx.ui.util.CollectUiEvents
+import io.github.wxxsfxyzm.intentx.ui.util.ImeDismissalFocusScope
+import io.github.wxxsfxyzm.intentx.ui.util.clearFocusOnImeDismiss
 import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.flow.distinctUntilChanged
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import timber.log.Timber
@@ -151,54 +147,40 @@ fun CatalogScreen(
 }
 
 @Composable
-fun CatalogSearchField(packageName: String? = null) {
+fun CatalogSearchField(packageName: String? = null, active: Boolean = true) {
     val viewModel: CatalogViewModel = koinViewModel(key = packageName ?: "apps")
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val focusManager = LocalFocusManager.current
-    val density = LocalDensity.current
-    val imeInsets = WindowInsets.ime
-    val owner = LocalLifecycleOwner.current
-    var searchFocused by remember { mutableStateOf(false) }
-
-    LaunchedEffect(owner, density, imeInsets, focusManager, searchFocused) {
-        if (!searchFocused) return@LaunchedEffect
-        owner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            var imeWasVisible = false
-            snapshotFlow { imeInsets.getBottom(density) > 0 }
-                .distinctUntilChanged()
-                .collect { imeVisible ->
-                    // Covered catalog pages can stay composed. Never clear another field's focus.
-                    if (!imeVisible && imeWasVisible && searchFocused) {
-                        focusManager.clearFocus(force = true)
-                    }
-                    imeWasVisible = imeVisible
-                }
-        }
+    val route = LocalNavigator.current.current()
+    val isCurrentPage = if (packageName == null) {
+        route == Route.Main && active
+    } else {
+        route is Route.Activities && route.packageName == packageName
     }
-
-    OutlinedTextField(
-        value = state.query,
-        onValueChange = { viewModel.dispatch(CatalogViewAction.SetQuery(it)) },
-        label = {
-            Text(
-                stringResource(
-                    when {
-                        packageName != null && state.componentTab == IntentOperation.Broadcast -> R.string.search_receivers
-                        packageName != null -> R.string.search_activities
-                        state.searchActivities -> R.string.search_apps_and_activities
-                        else -> R.string.search_apps
-                    },
-                ),
-            )
-        },
-        leadingIcon = { Icon(Icons.Outlined.Search, null) },
-        singleLine = true,
-        shape = MaterialTheme.shapes.extraLarge,
-        modifier = Modifier
-            .fillMaxWidth()
-            .onFocusChanged { searchFocused = it.isFocused }
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-    )
+    ImeDismissalFocusScope(enabled = isCurrentPage) {
+        OutlinedTextField(
+            value = state.query,
+            onValueChange = { viewModel.dispatch(CatalogViewAction.SetQuery(it)) },
+            label = {
+                Text(
+                    stringResource(
+                        when {
+                            packageName != null && state.componentTab == IntentOperation.Broadcast -> R.string.search_receivers
+                            packageName != null -> R.string.search_activities
+                            state.searchActivities -> R.string.search_apps_and_activities
+                            else -> R.string.search_apps
+                        },
+                    ),
+                )
+            },
+            leadingIcon = { Icon(Icons.Outlined.Search, null) },
+            singleLine = true,
+            shape = MaterialTheme.shapes.extraLarge,
+            modifier = Modifier
+                .clearFocusOnImeDismiss()
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+        )
+    }
 }
 
 @Composable

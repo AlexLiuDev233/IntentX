@@ -268,7 +268,7 @@ private fun Material3SettingsPagerContent(
         userScrollEnabled = true,
         modifier = modifier,
     ) { page ->
-        IntentXMainTab(page, tabs[page].label, useBlur, outerPadding)
+        IntentXMainTab(page, tabs[page].label, useBlur, outerPadding, active = page == mainPagerState.pagerState.currentPage)
     }
 }
 

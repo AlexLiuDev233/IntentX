@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -29,7 +28,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.wxxsfxyzm.intentx.R
 import io.github.wxxsfxyzm.intentx.ui.icons.AppIcons
 import io.github.wxxsfxyzm.intentx.ui.navigation.LocalNavigator
@@ -50,7 +48,6 @@ fun AboutPage(useBlur: Boolean, viewModel: AboutViewModel = koinViewModel()) {
     val navigator = LocalNavigator.current
     val uriHandler = LocalUriHandler.current
     val context = LocalContext.current
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
     CollectUiEvents(viewModel.eventFlow) { event ->
         when (event) {
             AboutViewEvent.OpenLicenses -> navigator.push(Route.OpenSourceLicense)
@@ -63,13 +60,12 @@ fun AboutPage(useBlur: Boolean, viewModel: AboutViewModel = koinViewModel()) {
             }
         }
     }
-    AboutContent(state, useBlur, viewModel::dispatch, { navigator.pop() })
+    AboutContent(useBlur, viewModel::dispatch, { navigator.pop() })
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun AboutContent(
-    state: AboutViewState,
     useBlur: Boolean,
     onAction: (AboutViewAction) -> Unit,
     onBack: () -> Unit,
@@ -111,7 +107,6 @@ private fun AboutContent(
         ) {
             item(key = "version") {
                 AboutHeader(
-                    appIcon = state.appIcon,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 32.dp)

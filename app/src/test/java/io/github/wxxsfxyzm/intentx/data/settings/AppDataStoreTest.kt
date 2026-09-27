@@ -13,8 +13,10 @@ import io.github.wxxsfxyzm.intentx.domain.catalog.ActivityStatusFilter
 import io.github.wxxsfxyzm.intentx.domain.catalog.CatalogSortOrder
 import io.github.wxxsfxyzm.intentx.domain.intent.IntentOperation
 import io.github.wxxsfxyzm.intentx.domain.intent.IntentSpec
+import io.github.wxxsfxyzm.intentx.domain.settings.model.preferences.theme.ThemeMode
 import io.github.wxxsfxyzm.intentx.domain.shortcut.IntentShortcut
 import io.github.wxxsfxyzm.intentx.executor.Authorizer
+import io.github.wxxsfxyzm.intentx.ui.page.main.settings.preferred.theme.ThemeSettingsAction
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +29,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -58,6 +61,38 @@ class AppDataStoreTest {
                 assertEquals(authorizer, AppSettingsRepositoryImpl(store).authorizer.first())
                 assertFalse(store.getBoolean(AppDataStore.THEME_USE_DYNAMIC_COLOR, true).first())
             }
+        }
+    }
+
+    @Test
+    fun pureBlackPreferenceDefaultsOffAndSurvivesReopeningAndThemeChanges() = runTest {
+        val file = File(temporaryFolder.root, "theme.preferences_pb")
+        withStore(file) { store ->
+            val preferences = ThemePreferences(store)
+            assertFalse(preferences.settings.first().usePureBlack)
+            assertFalse(preferences.themeStateFlow.first().usePureBlack)
+            preferences.update(ThemeSettingsAction.SetUsePureBlack(true))
+            assertTrue(preferences.settings.first().usePureBlack)
+            assertTrue(preferences.themeStateFlow.first().usePureBlack)
+            preferences.update(ThemeSettingsAction.SetThemeMode(ThemeMode.LIGHT))
+        }
+        withStore(file) { store ->
+            val preferences = ThemePreferences(store)
+            assertEquals(ThemeMode.LIGHT, preferences.settings.first().themeMode)
+            assertTrue(preferences.settings.first().usePureBlack)
+            assertTrue(preferences.themeStateFlow.first().usePureBlack)
+            for (mode in listOf(ThemeMode.DARK, ThemeMode.SYSTEM)) {
+                preferences.update(ThemeSettingsAction.SetThemeMode(mode))
+                assertEquals(mode, preferences.themeStateFlow.first().themeMode)
+                assertTrue(preferences.settings.first().usePureBlack)
+                assertTrue(preferences.themeStateFlow.first().usePureBlack)
+            }
+            preferences.update(ThemeSettingsAction.SetUsePureBlack(false))
+        }
+        withStore(file) { store ->
+            val preferences = ThemePreferences(store)
+            assertFalse(preferences.settings.first().usePureBlack)
+            assertFalse(preferences.themeStateFlow.first().usePureBlack)
         }
     }
 

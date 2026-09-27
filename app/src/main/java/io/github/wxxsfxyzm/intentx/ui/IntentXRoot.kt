@@ -43,6 +43,7 @@ fun IntentXRoot(
         InstallerTheme(
             useMiuix = false,
             themeMode = state.themeMode,
+            usePureBlack = state.usePureBlack,
             paletteStyle = state.paletteStyle,
             colorSpec = state.colorSpec,
             useDynamicColor = state.useDynamicColor,

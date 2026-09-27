@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.twotone.InvertColors
 import androidx.compose.material3.AlertDialog
@@ -227,6 +228,15 @@ private fun ThemeSettingsContent(uiState: ThemeSettingsState, onAction: (ThemeSe
                                 ThemeMode.SYSTEM -> stringResource(R.string.theme_settings_theme_mode_system)
                             },
                             onClick = { showThemeModeDialog = true },
+                        )
+                    }
+                    item(animatedVisibility = uiState.themeMode != ThemeMode.LIGHT) {
+                        SwitchWidget(
+                            icon = Icons.Default.Contrast,
+                            title = stringResource(R.string.theme_settings_pure_black),
+                            description = stringResource(R.string.theme_settings_pure_black_desc),
+                            checked = uiState.usePureBlack,
+                            onCheckedChange = { onAction(ThemeSettingsAction.SetUsePureBlack(it)) },
                         )
                     }
                     item {

@@ -41,6 +41,7 @@ class ThemePreferences(private val store: AppDataStore) {
             ThemeSettingsState(
                 useBlur = prefs[AppDataStore.UI_USE_BLUR] ?: (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU),
                 themeMode = ThemeMode.fromValueOrDefault(prefs[AppDataStore.THEME_MODE].orEmpty()),
+                usePureBlack = prefs[AppDataStore.THEME_USE_PURE_BLACK] ?: false,
                 paletteStyle = PaletteStyle.fromValueOrDefault(prefs[AppDataStore.THEME_PALETTE_STYLE].orEmpty()),
                 colorSpec = ThemeColorSpec.fromValueOrDefault(prefs[AppDataStore.THEME_COLOR_SPEC].orEmpty()),
                 useDynamicColor = dynamic,
@@ -55,6 +56,7 @@ class ThemePreferences(private val store: AppDataStore) {
     val themeStateFlow: Flow<ThemeState> = settings.map {
         ThemeState(
             isLoaded = true, themeMode = it.themeMode, paletteStyle = it.paletteStyle,
+            usePureBlack = it.usePureBlack,
             colorSpec = it.colorSpec, useDynamicColor = it.useDynamicColor,
             seedColor = it.seedColor.toArgb(), useBlur = it.useBlur,
             useAppleFloatingBar = it.useAppleFloatingBar,
@@ -69,6 +71,8 @@ class ThemePreferences(private val store: AppDataStore) {
                 is ThemeSettingsAction.SetUseBlur -> prefs[AppDataStore.UI_USE_BLUR] = action.enable
 
                 is ThemeSettingsAction.SetThemeMode -> prefs[AppDataStore.THEME_MODE] = action.mode.name
+
+                is ThemeSettingsAction.SetUsePureBlack -> prefs[AppDataStore.THEME_USE_PURE_BLACK] = action.use
 
                 is ThemeSettingsAction.SetPaletteStyle -> prefs[AppDataStore.THEME_PALETTE_STYLE] = action.style.name
 

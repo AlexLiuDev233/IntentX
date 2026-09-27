@@ -15,6 +15,7 @@ data class ThemeState(
     val isLoaded: Boolean = false,
     val useMiuix: Boolean = false,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val usePureBlack: Boolean = false,
     val paletteStyle: PaletteStyle = PaletteStyle.TonalSpot,
     val colorSpec: ThemeColorSpec = ThemeColorSpec.SPEC_2025,
     val useDynamicColor: Boolean = true,

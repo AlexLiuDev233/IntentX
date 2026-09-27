@@ -26,6 +26,7 @@ import io.github.wxxsfxyzm.intentx.domain.settings.model.preferences.theme.Theme
 import io.github.wxxsfxyzm.intentx.domain.settings.model.preferences.theme.ThemeMode
 import io.github.wxxsfxyzm.intentx.ui.theme.material.animateAsState
 import io.github.wxxsfxyzm.intentx.ui.theme.material.dynamicColorScheme
+import io.github.wxxsfxyzm.intentx.ui.theme.material.withPureBlackBackground
 
 private val LocalIsDark = staticCompositionLocalOf { false }
 private val LocalPaletteStyle = staticCompositionLocalOf { PaletteStyle.Expressive }
@@ -80,6 +81,7 @@ fun InstallerTheme(
     useDynamicColor: Boolean,
     useMiuixMonet: Boolean,
     seedColor: Color,
+    usePureBlack: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val preservedContent = remember {
@@ -101,13 +103,13 @@ fun InstallerTheme(
     }
 
     // 1. Generate the base scheme with spec support
-    val baseColorScheme = remember(keyColor, isDark, paletteStyle, colorSpec) {
+    val baseColorScheme = remember(keyColor, isDark, paletteStyle, colorSpec, usePureBlack) {
         dynamicColorScheme(
             keyColor = keyColor,
             isDark = isDark,
             style = paletteStyle,
             colorSpec = colorSpec,
-        )
+        ).withPureBlackBackground(isDark = isDark, enabled = usePureBlack)
     }
 
     // 2. Wrap it with smooth transitions

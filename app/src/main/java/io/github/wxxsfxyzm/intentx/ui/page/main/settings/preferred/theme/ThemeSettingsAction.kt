@@ -12,6 +12,7 @@ import io.github.wxxsfxyzm.intentx.domain.settings.model.preferences.theme.Theme
 sealed interface ThemeSettingsAction {
     data class SetUseBlur(val enable: Boolean) : ThemeSettingsAction
     data class SetThemeMode(val mode: ThemeMode) : ThemeSettingsAction
+    data class SetUsePureBlack(val use: Boolean) : ThemeSettingsAction
     data class SetPaletteStyle(val style: PaletteStyle) : ThemeSettingsAction
     data class SetColorSpec(val spec: ThemeColorSpec) : ThemeSettingsAction
     data class SetUseDynamicColor(val use: Boolean) : ThemeSettingsAction

@@ -51,6 +51,19 @@ fun dynamicColorScheme(
     )
 }
 
+/** Keep elevated surfaces and accent colors distinct from the pure black page background. */
+fun ColorScheme.withPureBlackBackground(isDark: Boolean, enabled: Boolean): ColorScheme {
+    if (!isDark || !enabled) return this
+    return copy(
+        background = Color.Black,
+        surface = Color.Black,
+        surfaceDim = Color.Black,
+        // Page scaffolds and app bar backdrops use this role throughout IntentX.
+        surfaceContainer = Color.Black,
+        surfaceContainerLowest = Color.Black,
+    )
+}
+
 /**
  * Extension function to animate all colors inside a ColorScheme smoothly,
  * including the newly added fixed container roles in Material 3.

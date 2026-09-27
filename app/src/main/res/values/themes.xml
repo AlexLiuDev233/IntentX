@@ -1,0 +1,23 @@
+<resources>
+
+    <style name="Theme.IntentX" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowSplashScreenBackground">
+            @color/splash_background
+        </item>
+
+        <item name="android:windowSplashScreenAnimatedIcon">
+            @mipmap/ic_launcher
+        </item>
+    </style>
+
+    <style name="Theme.IntentX.Shortcut" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowDisablePreview">true</item>
+    </style>
+
+
+</resources>

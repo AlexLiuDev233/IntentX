@@ -1,0 +1,97 @@
+name: Main CI
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Check and build APKs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: enhanced
+          cache-read-only: false
+          cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
+
+      - name: Set up release signing
+        env:
+          SIGNING_KEY_STORE_BASE64: ${{ secrets.SIGNING_KEY_STORE_BASE64 }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: |
+          for name in SIGNING_KEY_STORE_BASE64 SIGNING_STORE_PASSWORD SIGNING_KEY_ALIAS SIGNING_KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "Missing release signing secret: $name" >&2
+              exit 1
+            fi
+          done
+
+          umask 077
+          mkdir -p keystore
+          printf '%s' "$SIGNING_KEY_STORE_BASE64" | base64 --decode > keystore/intentx.jks
+          printf 'storeFile=keystore/intentx.jks\nkeyAlias=%s\nkeyPassword=%s\nstorePassword=%s\n' \
+            "$SIGNING_KEY_ALIAS" "$SIGNING_KEY_PASSWORD" "$SIGNING_STORE_PASSWORD" > keystore.properties
+
+      - name: Check formatting, test, and build
+        run: ./gradlew spotlessCheck :app:testDebugUnitTest :intent-executor:testDebugUnitTest :app:assembleDebug :app:assembleRelease
+
+      - name: Name Debug APK from Gradle version
+        id: debug_apk
+        run: |
+          metadata=app/build/outputs/apk/debug/output-metadata.json
+          version_name=$(jq -er '.elements[0].versionName' "$metadata")
+          output_file=$(jq -er '.elements[0].outputFile' "$metadata")
+          source_apk="app/build/outputs/apk/debug/$output_file"
+          target_apk="app/build/outputs/apk/debug/IntentX-CI-Debug-$version_name.apk"
+          test -f "$source_apk"
+          mv "$source_apk" "$target_apk"
+          echo "apk=$target_apk" >> "$GITHUB_OUTPUT"
+
+      - name: Name Release APK from Gradle version
+        id: release_apk
+        run: |
+          metadata=app/build/outputs/apk/release/output-metadata.json
+          version_name=$(jq -er '.elements[0].versionName' "$metadata")
+          output_file=$(jq -er '.elements[0].outputFile' "$metadata")
+          source_apk="app/build/outputs/apk/release/$output_file"
+          target_apk="app/build/outputs/apk/release/IntentX-CI-Release-$version_name.apk"
+          test -f "$source_apk"
+          mv "$source_apk" "$target_apk"
+          echo "apk=$target_apk" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v7
+        with:
+          path: ${{ steps.debug_apk.outputs.apk }}
+          if-no-files-found: error
+          retention-days: 15
+          archive: false
+
+      - name: Upload signed Release APK
+        uses: actions/upload-artifact@v7
+        with:
+          path: ${{ steps.release_apk.outputs.apk }}
+          if-no-files-found: error
+          retention-days: 15
+          archive: false

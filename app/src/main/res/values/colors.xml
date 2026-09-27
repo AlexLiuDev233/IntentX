@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Launcher icon -->
+    <color name="ic_launcher_background">#FFFDFB</color>
+    <color name="ic_launcher_foreground">#FF111111</color>
+
+    <!-- Splash -->
+    <color name="splash_background">#ECEFF1</color>
+
+    <color name="light_primary">#FF4A672D</color>
+    <color name="light_on_primary">#FF0E2000</color>
+    <color name="light_primary_container">#FFCBEEA5</color>
+    <color name="light_error">#FFB3261E</color>
+
+</resources>

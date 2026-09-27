@@ -1,0 +1,11 @@
+# Hidden framework classes are supplied by Android at runtime.
+-dontwarn android.app.ActivityThread
+-dontwarn android.app.ContextImpl
+-dontwarn android.app.IActivityManager
+-dontwarn android.app.IActivityManager$Stub
+-dontwarn android.app.IApplicationThread
+-dontwarn android.content.IIntentReceiver
+-dontwarn android.app.ProfilerInfo
+-dontwarn android.app.LoadedApk
+-dontwarn com.android.internal.app.IAppOpsService
+-dontwarn com.android.internal.app.IAppOpsService$Stub

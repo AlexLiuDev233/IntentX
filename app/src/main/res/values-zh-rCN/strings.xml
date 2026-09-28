@@ -53,6 +53,7 @@
     <string name="app_name">IntentX</string>
     <string name="apps">应用</string>
     <string name="saved">Intent</string>
+    <string name="shortcut_intent_list">Intent 列表</string>
     <string name="authorization">授权</string>
     <string name="new_intent">新建 Intent</string>
     <string name="operation_activity">Activity</string>

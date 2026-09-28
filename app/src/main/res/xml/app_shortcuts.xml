@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="intent_list"
+        android:enabled="true"
+        android:icon="@mipmap/ic_shortcut_intents"
+        android:shortcutShortLabel="@string/shortcut_intent_list">
+        <intent
+            android:action="io.github.wxxsfxyzm.intentx.action.OPEN_INTENTS"
+            android:targetPackage="io.github.wxxsfxyzm.intentx"
+            android:targetClass="io.github.wxxsfxyzm.intentx.MainActivity" />
+    </shortcut>
+</shortcuts>

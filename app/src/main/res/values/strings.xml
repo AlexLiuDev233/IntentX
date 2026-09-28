@@ -48,6 +48,7 @@
     <string name="app_name">IntentX</string>
     <string name="apps">Apps</string>
     <string name="saved">Intents</string>
+    <string name="shortcut_intent_list">Intent list</string>
     <string name="authorization">Authorization</string>
     <string name="new_intent">New intent</string>
     <string name="operation_activity">Activity</string>

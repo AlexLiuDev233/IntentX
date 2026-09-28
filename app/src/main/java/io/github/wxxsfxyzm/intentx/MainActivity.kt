@@ -17,6 +17,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import io.github.wxxsfxyzm.intentx.ui.AppViewModel
 import io.github.wxxsfxyzm.intentx.ui.AuthorizationUi
 import io.github.wxxsfxyzm.intentx.ui.IntentXRoot
+import io.github.wxxsfxyzm.intentx.ui.page.main.settings.SettingsSharedViewModel
 import io.github.wxxsfxyzm.intentx.ui.page.main.settings.preferred.authorization.AuthorizationViewAction
 import io.github.wxxsfxyzm.intentx.ui.page.main.settings.preferred.authorization.AuthorizationViewEvent
 import io.github.wxxsfxyzm.intentx.ui.page.main.settings.preferred.authorization.AuthorizationViewModel
@@ -26,14 +27,24 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 
 class MainActivity : ComponentActivity() {
+    private companion object {
+        const val ACTION_OPEN_INTENTS = "io.github.wxxsfxyzm.intentx.action.OPEN_INTENTS"
+    }
+
     private val appViewModel: AppViewModel by viewModel()
     private val authorization: AuthorizationViewModel by viewModel()
+    private val sharedSettings: SettingsSharedViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         var themeLoaded = false
         splashScreen.setKeepOnScreenCondition { !themeLoaded }
         super.onCreate(savedInstanceState)
+        if (savedInstanceState == null && intent.action == ACTION_OPEN_INTENTS) {
+            // Static shortcuts start a fresh task; select the tab before creating the pager.
+            sharedSettings.updateLastMainPageIndex(1)
+            Timber.d("Opening Intent list from app shortcut")
+        }
         Timber.d("Main Activity created; restoring=%s", savedInstanceState != null)
         enableEdgeToEdge()
         lifecycleScope.launch {
